@@ -23,7 +23,8 @@ struct Organism:
         self.three_forth = one_forth * 3
 
     def evolve(self,
-               data: Tensor[DType.float64],
+               inputs: List[List[Float64]],
+               outputs: List[List[Float64]],
                generations: Int = 10000,
                error_threshold: Float64 = 0.0,
                log_each: Int = 1000) -> NeuralNetwork:
@@ -33,16 +34,16 @@ struct Organism:
         
         for gen in range(generations):
             for idx in range(self.networks.size):
-                self.networks[idx].evaluate(data)
+                self.networks[idx].evaluate(inputs, outputs)
 
             sort[NeuralNetwork, cmp_err](self.networks)
 
             error = self.networks[0].error
             if error <= error_threshold:
-                print("generation: " + String(gen) + "error: " + error + ". below threshold. breaking.")
+                print("generation: " + String(gen) + " error: " + error + ". below threshold. breaking.")
                 break
             elif gen % log_each == 0:
-                print("generation: " + String(gen) + "error: " + error)
+                print("generation: " + String(gen) + " error: " + error)
 
             self.networks = self.networks[:self.three_forth]
             top_quarter = self.networks[:self.one_forth]

@@ -1,29 +1,29 @@
 from neuralnetwork import NeuralNetwork
 from organism import Organism
 from tensor import Tensor, TensorShape, TensorSpec
+from utils.index import Index
 
-def confusion_matrix(model: NeuralNetwork, data: Tensor[DType.float64]):
+def confusion_matrix(model: NeuralNetwork, inputs: List[List[Float64]], outputs: List[List[Float64]]):
     t_n = t_p = f_n = f_p = ct = 0
 
-    var size = data.dim(0)
-    for row in range(size):
-        var inputs = Tensor(data[row][0])
-        var outputs = Tensor(data[row][1])
-        var actuals = model.run(inputs)
-        for idx in range(actuals.dim(0)):
+    var rows = len(inputs)
+    for row in range(rows):
+        var actuals = model.run(inputs[row])
+        var cols = len(actuals[row])
+        for col in range(cols):
             ct += 1
-            if outputs[idx] > 0.5:
-                if actuals[idx] > 0.5:
+            if outputs[row][col] > 0.5:
+                if actuals[row][col] > 0.5:
                     t_p += 1
                 else:
                     f_p += 1
             else:
-                if actuals[idx] < 0.5:
+                if actuals[row][col] < 0.5:
                     t_n += 1
                 else:
                     f_n += 1
 
-    print("Test size: " + String(size))
+    print("Test size: " + String(rows))
     print("----------------------")
     print("TN: " + String(t_n) + " | " + " FP: " + String(f_p))
     print("----------------------")
@@ -36,20 +36,25 @@ def confusion_matrix(model: NeuralNetwork, data: Tensor[DType.float64]):
 def main():
     var nn = NeuralNetwork()
     nn.add_layer("input", size=2)
-    nn.add_layer("hidden", size=2)
+    nn.add_layer("hidden", size=4)
     nn.add_layer("output", size=1)
     nn.fully_connect()
 
-    var data = Tensor[DType.float64]([
-        [[0.0, 0.0], [0.0]],
-        [[0.0, 1.0], [1.0]],
-        [[1.0, 0.0], [1.0]],
-        [[1.0, 1.0], [0.0]]
-    ])
+    var inputs = List[List[Float64]]()
+    inputs.append(List[Float64](0.0, 0.0))
+    inputs.append(List[Float64](0.0, 1.0))
+    inputs.append(List[Float64](1.0, 0.0))
+    inputs.append(List[Float64](1.0, 1.0))
+
+    var outputs = List[List[Float64]]()
+    outputs.append(List[Float64](0.0))
+    outputs.append(List[Float64](1.0))
+    outputs.append(List[Float64](1.0))
+    outputs.append(List[Float64](0.0))
 
     var organism = Organism(nn)
-    var network = organism.evolve(data)
-    
+    var network = organism.evolve(inputs, outputs)
+
     var error = String(network.error)
     print("Final error: " + error)
-    confusion_matrix(network, data)
+    confusion_matrix(network, inputs, outputs)
