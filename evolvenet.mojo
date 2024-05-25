@@ -36,9 +36,11 @@ def confusion_matrix(model: NeuralNetwork, inputs: List[List[Float64]], outputs:
 def main():
     var nn = NeuralNetwork()
     nn.add_layer("input", size=2)
-    nn.add_layer("hidden", size=4)
+    nn.add_layer("hidden", size=2)
     nn.add_layer("output", size=1)
     nn.fully_connect()
+
+    nn.inspect()
 
     var inputs = List[List[Float64]]()
     inputs.append(List[Float64](0.0, 0.0))
@@ -53,7 +55,7 @@ def main():
     outputs.append(List[Float64](0.0))
 
     var organism = Organism(nn)
-    var network = organism.evolve(inputs, outputs)
+    var network = organism.evolve(inputs, outputs, generations=10)
 
     var error = String(network.error)
     print("Final error: " + error)

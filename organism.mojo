@@ -5,6 +5,7 @@ from algorithm.sort import sort
 @value
 struct Organism:
     var networks: List[NeuralNetwork]
+    var size: Int
     var one_forth: Int
     var two_forth: Int
     var three_forth: Int
@@ -12,15 +13,19 @@ struct Organism:
     def __init__(inout self, network: NeuralNetwork, size: Int = 16):
         if size < 16:
             raise Error("size needs to be greater than 16")
+
         self.networks = List[NeuralNetwork]()
-        for _ in range(size):
-            var nn = network.clone()
-            nn.randomize()
-            self.networks.append(nn)
-        one_forth = int(size * 0.25)
-        self.one_forth = one_forth
-        self.two_forth = one_forth * 2
-        self.three_forth = one_forth * 3
+
+        for idx in range(size):
+            self.networks.append(network.clone())
+
+        for idx in range(size):
+            self.networks[idx].randomize()
+
+        self.size = size
+        self.one_forth = int(size * 0.25)
+        self.two_forth = self.one_forth * 2
+        self.three_forth = self.one_forth * 3
 
     def evolve(self,
                inputs: List[List[Float64]],
@@ -31,9 +36,9 @@ struct Organism:
 
         fn cmp_err(a: NeuralNetwork, b: NeuralNetwork, /) capturing -> Bool:
             return a.error < b.error
-        
+
         for gen in range(generations):
-            for idx in range(self.networks.size):
+            for idx in range(len(self.networks)):
                 self.networks[idx].evaluate(inputs, outputs)
 
             sort[NeuralNetwork, cmp_err](self.networks)
@@ -45,17 +50,20 @@ struct Organism:
             elif gen % log_each == 0:
                 print("generation: " + String(gen) + " error: " + error)
 
+            # kill the bottom quarter
             self.networks = self.networks[:self.three_forth]
-            top_quarter = self.networks[:self.one_forth]
-            for n in range(top_quarter.size):
-                self.networks.append(top_quarter[n].clone())
 
-            for i in range(3):
-                self.networks[i+1].punctuate(i)
+            # clone the top quarter
+            for n in range(self.one_forth):
+                self.networks.append(self.networks[n].clone())
 
-            for j in range(11):
-                self.networks[j+4].mutate()
+            # mutate all but the best one
+            for j in range(self.size - 1):
+                self.networks[j+1].mutate()
 
         sort[NeuralNetwork, cmp_err](self.networks)
-        
+
+        for k in range(self.size):
+          self.networks[k].inspect()
+
         return self.networks[0]
