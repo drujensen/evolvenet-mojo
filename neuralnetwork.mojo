@@ -21,8 +21,7 @@ struct Neuron:
         neuron.activation = self.activation
         neuron.bias = self.bias
         for idx in range(len(self.synapses)):
-            var synapse = self.synapses[idx]
-            neuron.synapses.append(synapse)
+            neuron.synapses.append(self.synapses[idx])
         return neuron
 
     fn randomize(inout self):
@@ -33,9 +32,8 @@ struct Neuron:
 
     fn mutate(inout self, rate: Float64):
         self.bias += random_float64(-rate, rate)
-        var size = len(self.synapses)
-        for idx in range(size):
-            self.synapses[idx] = random_float64(-rate, rate)
+        for idx in range(len(self.synapses)):
+            self.synapses[idx] += random_float64(-rate, rate)
 
     fn punctuate(inout self, pos: Int):
         var pow10 = pow[DType.float64, 1](10, pos)
@@ -100,11 +98,10 @@ struct Layer:
         for idx in range(len(self.neurons)):
             self.neurons[idx].randomize()
 
-    fn mutate(self, rate: Float64):
+    fn mutate(inout self, rate: Float64):
         var neuron_rate = Float64(rate / len(self.neurons))
         for idx in range(len(self.neurons)):
-            var neuron = self.neurons[idx]
-            neuron.mutate(neuron_rate)
+            self.neurons[idx].mutate(neuron_rate)
 
     fn punctuate(inout self, pos: Int):
         for idx in range(len(self.neurons)):
@@ -124,18 +121,14 @@ struct Layer:
             self.neurons[idx].activate(parent)
 
     fn inspect(self):
-        print("weights")
         for idx in range(len(self.neurons)):
+            print("n:", idx)
+            print(" - w:")
             for s_idx in range(len(self.neurons[idx].synapses)):
-                print(" - ", self.neurons[idx].synapses[s_idx])
-
-        print("bias")
-        for idx in range(len(self.neurons)):
-            print(" - ", self.neurons[idx].bias)
-
-        print("activation")
-        for idx in range(len(self.neurons)):
-            print(" - ", self.neurons[idx].activation)
+                print("   -", self.neurons[idx].synapses[s_idx])
+            print(" - f:", self.neurons[idx].function)
+            print(" - b:", self.neurons[idx].bias)
+            print(" - a:", self.neurons[idx].activation)
 
 
 @value
@@ -209,9 +202,8 @@ struct NeuralNetwork:
         print("#############################################")
         for idx in range(len(self.layers)):
             print("---------")
-            print("layer: ", idx)
+            print("l:", idx, self.layers[idx].name)
             print("---------")
-            print("name: ", self.layers[idx].name)
             self.layers[idx].inspect()
         print("---------")
         print("error: ", self.error)

@@ -51,19 +51,20 @@ struct Organism:
                 print("generation: " + String(gen) + " error: " + error)
 
             # kill the bottom quarter
-            self.networks = self.networks[:self.three_forth]
+            self.networks.resize(self.three_forth)
 
             # clone the top quarter
             for n in range(self.one_forth):
                 self.networks.append(self.networks[n].clone())
 
             # mutate all but the best one
-            for j in range(self.size - 1):
-                self.networks[j+1].mutate()
+            for n in range(1, self.size):
+                self.networks[n].mutate()
+
+            # punctuate top quarter
+            for n in range(1, self.one_forth):
+                self.networks[n].punctuate(n)
 
         sort[NeuralNetwork, cmp_err](self.networks)
-
-        for k in range(self.size):
-          self.networks[k].inspect()
 
         return self.networks[0]
