@@ -20,27 +20,25 @@ struct Neuron:
         var neuron: Neuron = Neuron(self.function)
         neuron.activation = self.activation
         neuron.bias = self.bias
-        for idx in range(len(self.synapses)):
-            neuron.synapses.append(self.synapses[idx])
+        for synapse in self.synapses:
+            neuron.synapses.append(synapse[])
         return neuron
 
     fn randomize(inout self):
         self.bias = random_float64(-1.0, 1.0)
-        var size = len(self.synapses)
-        for idx in range(size):
-            self.synapses[idx] = random_float64(-1.0, 1.0)
+        for synapse in self.synapses:
+            synapse[] = random_float64(-1.0, 1.0)
 
     fn mutate(inout self, rate: Float64):
         self.bias += random_float64(-rate, rate)
-        for idx in range(len(self.synapses)):
-            self.synapses[idx] += random_float64(-rate, rate)
+        for synapse in self.synapses:
+            synapse[] += random_float64(-rate, rate)
 
     fn punctuate(inout self, pos: Int):
         var pow10 = pow[DType.float64, 1](10, pos)
         self.bias = round(pow10 * self.bias) / pow10
-        var size = len(self.synapses)
-        for idx in range(size):
-            self.synapses[idx] = round(pow10 * self.synapses[idx]) / pow10
+        for synapse in self.synapses:
+            synapse[] = round(pow10 * synapse[]) / pow10
 
     fn set(inout self, value: Float64):
         self.activation = self.none(value)
@@ -90,35 +88,35 @@ struct Layer:
 
     fn clone(self) -> Layer:
         var layer = Layer(self.name, 0, self.function)
-        for idx in range(len(self.neurons)):
-          layer.neurons.append(self.neurons[idx].clone())
+        for neuron in self.neurons:
+          layer.neurons.append(neuron[].clone())
         return layer
 
     fn randomize(inout self):
-        for idx in range(len(self.neurons)):
-            self.neurons[idx].randomize()
+        for neuron in self.neurons:
+            neuron[].randomize()
 
     fn mutate(inout self, rate: Float64):
         var neuron_rate = Float64(rate / len(self.neurons))
-        for idx in range(len(self.neurons)):
-            self.neurons[idx].mutate(neuron_rate)
+        for neuron in self.neurons:
+            neuron[].mutate(neuron_rate)
 
     fn punctuate(inout self, pos: Int):
-        for idx in range(len(self.neurons)):
-            self.neurons[idx].punctuate(pos)
+        for neuron in self.neurons:
+            neuron[].punctuate(pos)
 
     fn set(inout self, values: List[Float64]):
         for idx in range(len(values)):
             self.neurons[idx].set(values[idx])
 
     fn connect(inout self, parent: Layer):
-        for idx in range(len(self.neurons)):
+        for neuron in self.neurons:
           for _ in range(len(parent.neurons)):
-            self.neurons[idx].synapses.append(random_float64(-1.0, 1.0))
+            neuron[].synapses.append(random_float64(-1.0, 1.0))
 
     fn activate(inout self, parent: Layer):
-        for idx in range(len(self.neurons)):
-            self.neurons[idx].activate(parent)
+        for neuron in self.neurons:
+            neuron[].activate(parent)
 
     fn inspect(self):
         for idx in range(len(self.neurons)):
@@ -145,8 +143,8 @@ struct NeuralNetwork:
 
     fn clone(self) -> NeuralNetwork:
         var network: NeuralNetwork = NeuralNetwork()
-        for idx in range(len(self.layers)):
-            network.layers.append(self.layers[idx].clone())
+        for layer in self.layers:
+            network.layers.append(layer[].clone())
         return network
 
     fn randomize(inout self):

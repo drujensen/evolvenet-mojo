@@ -38,8 +38,8 @@ struct Organism:
             return a.error < b.error
 
         for gen in range(generations):
-            for idx in range(len(self.networks)):
-                self.networks[idx].evaluate(inputs, outputs)
+            for network in self.networks:
+                network[].evaluate(inputs, outputs)
 
             sort[NeuralNetwork, cmp_err](self.networks)
 
@@ -58,8 +58,8 @@ struct Organism:
                 self.networks.append(self.networks[n].clone())
 
             # mutate all but the best one
-            for n in range(1, self.size):
-                self.networks[n].mutate()
+            for network in self.networks[1:]:
+                network[].mutate()
 
             # punctuate top quarter
             for n in range(1, self.one_forth):
